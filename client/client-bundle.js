@@ -98,6 +98,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var _ = __webpack_require__(/*! lodash */ "./node_modules/lodash/index.js");
+var elementOverlays = [];
 
 function BaSysPlugin(eventBus, overlays) {
 
@@ -106,6 +107,20 @@ function BaSysPlugin(eventBus, overlays) {
       changeShape(event);
     });
   });
+
+  eventBus.on('shape.changed', function (event) {
+    _.defer(function () {
+      changeShape(event);
+    });
+  });
+
+  eventBus.on('shape.removed', function (event) {
+    var element = event.element;
+
+    _.defer(function () {
+        removeShape(element);
+    });
+});
 
   function changeShape(event) {
     var element = event.element;
@@ -119,18 +134,35 @@ function BaSysPlugin(eventBus, overlays) {
 
   }
 
-  function addStyle(element) {
-  
-    if (element.businessObject.topic === 'BasysTask') {
-      console.log('Add style to element', element);
+  function removeShape(element) {
+    var elementObject = elementOverlays[element.id];
+    for (var overlay in elementObject) {
+        overlays.remove(elementObject[overlay]);
+    }
+    delete elementOverlays[element.id];
+}
 
-      overlays.add(element, 'badge', {
-        position: {
-          top: 6,
-          right: 75
-        },
-        html: '<div class="basys-logo"></div>'
-      });
+  function addStyle(element) {
+
+    if (elementOverlays[element.id] !== undefined && elementOverlays[element.id].length !== 0) {
+      for (var overlay in elementOverlays[element.id]) {
+        overlays.remove(elementOverlays[element.id][overlay]);
+      }
+    }
+
+    elementOverlays[element.id] = [];
+
+    if (element.businessObject.topic === 'BasysTask') {
+
+      elementOverlays[element.id].push(
+        overlays.add(element, 'badge', {
+          position: {
+            top: 6,
+            right: 75
+          },
+          html: '<div class="basys-logo"></div>'
+        })
+      );
 
     }
 
@@ -142,8 +174,8 @@ BaSysPlugin.$inject = [
 ];
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  __init__: [ 'basys' ],
-  basys: [ 'type', BaSysPlugin ]
+  __init__: ['basys'],
+  basys: ['type', BaSysPlugin]
 });
 
 /***/ }),
