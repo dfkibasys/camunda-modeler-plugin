@@ -21,9 +21,9 @@ function BaSysPlugin(eventBus, overlays) {
     var element = event.element;
 
     _.defer(function () {
-        removeShape(element);
+      removeShape(element);
     });
-});
+  });
 
   function changeShape(event) {
     var element = event.element;
@@ -40,10 +40,10 @@ function BaSysPlugin(eventBus, overlays) {
   function removeShape(element) {
     var elementObject = elementOverlays[element.id];
     for (var overlay in elementObject) {
-        overlays.remove(elementObject[overlay]);
+      overlays.remove(elementObject[overlay]);
     }
     delete elementOverlays[element.id];
-}
+  }
 
   function addStyle(element) {
 
@@ -55,7 +55,10 @@ function BaSysPlugin(eventBus, overlays) {
 
     elementOverlays[element.id] = [];
 
-    if (element.businessObject.topic === 'BasysTask') {
+    if (element.businessObject.topic === 'BasysTask' ||
+      (typeof element.businessObject.modelerTemplate !== 'undefined' &&
+        element.businessObject.modelerTemplate.includes('de.dfki.cos.basys'))
+    ) {
 
       elementOverlays[element.id].push(
         overlays.add(element, 'badge', {
