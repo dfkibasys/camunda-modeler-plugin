@@ -63,8 +63,8 @@ function BaSysPlugin(eventBus, overlays) {
       elementOverlays[element.id].push(
         overlays.add(element, 'badge', {
           position: {
-            top: 6,
-            right: 75
+            top: 2,
+            right: 22
           },
           html: '<div class="basys-logo"></div>'
         })
