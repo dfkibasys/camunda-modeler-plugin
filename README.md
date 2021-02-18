@@ -33,7 +33,7 @@ Given you've setup and linked your plug-in [as explained above](#development-set
 To build the plugin, run:
 
 ```sh
-npm run build
+npm run bundle
 ```
 
 
