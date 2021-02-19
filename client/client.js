@@ -1,7 +1,9 @@
 import {
     registerBpmnJSPlugin
   } from 'camunda-modeler-plugin-helpers';
+
+import BaSysPlugin from './BaSysPlugin';
+import AccessAASPluginProvider from './AccessAASPluginProvider';
   
-  import plugin from './BaSysPlugin';
-  
-  registerBpmnJSPlugin(plugin);
+registerBpmnJSPlugin(BaSysPlugin);
+registerBpmnJSPlugin(AccessAASPluginProvider);
