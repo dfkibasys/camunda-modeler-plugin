@@ -95,8 +95,11 @@
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./client/util.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+
+
 
 
 let CamundaPropertiesProvider = __webpack_require__(/*! bpmn-js-properties-panel/lib/provider/camunda/CamundaPropertiesProvider */ "./node_modules/bpmn-js-properties-panel/lib/provider/camunda/CamundaPropertiesProvider.js");
@@ -107,7 +110,6 @@ function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry,
   let self = this;
 
   self.getAssets.then(assets => {
-
     let newHtml = self.generateSelect(assets);
 
     self.getTabs = function(element) {
@@ -120,24 +122,26 @@ function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry,
         }
       });
       if (generalTab.length > 0) {
-        let newGeneralTab = this.updateGeneralTab(generalTab[0], newHtml);
+        let newGeneralTab = this.updateGeneralTab(generalTab[0], newHtml, translate);
         array[generalIndex] = newGeneralTab;
       }
       return array;
     };
 
+  }).catch(err => {
+    console.error(err)
   })
 
 };
 
 AccessAASPluginProvider.prototype.getAssets = new Promise(function(resolve, reject) {
   let assets = [];
-  axios__WEBPACK_IMPORTED_MODULE_0___default.a.get("http://127.0.0.1:4999/api/v1/registry").then((res) => {
+  axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("http://127.0.0.1:4999/api/v1/registry").then((res) => {
     for (let i = 0; i < res.data.length; i++) {
       assets.push(res.data[i].asset.idShort);
     }
   }).catch(err => {
-    reject(assets);
+    reject(err);
   })
   .finally(() => {
    resolve(assets);
@@ -145,7 +149,7 @@ AccessAASPluginProvider.prototype.getAssets = new Promise(function(resolve, reje
 });
 
 AccessAASPluginProvider.prototype.generateSelect = function(assets){
-  let html = '<label for="own-select">Id Short</label><select id="id-short" data-action="selectOption"><option value="">';
+  let html = '<label for="id-short">Id Short</label><select id="id-short" name="assetID"><option value="">';
 
   for (let i = 0; i < assets.length; i++){
     html += `<option value="idShort.${assets[i]}">${assets[i]}</option>`;
@@ -155,14 +159,15 @@ AccessAASPluginProvider.prototype.generateSelect = function(assets){
   return html;
 }
 
-AccessAASPluginProvider.prototype.updateGeneralTab = function(generalTab, newHtml) {
+AccessAASPluginProvider.prototype.updateGeneralTab = function(generalTab, newHtml, translate) {
 
   if (generalTab.groups.length > 0 && generalTab.groups[0].entries.length > 0) {
     generalTab.groups[0].entries.splice(2, 0, {
       html: newHtml,
-      id: "id-short-select",
-      selectOption: function(element, node) {
-        console.log(element);
+      id: "id-short",
+      set: function(element, values){
+        console.log(values.assetID)
+        Object(_util__WEBPACK_IMPORTED_MODULE_0__["addComment"])(element, "ID-Short", values.assetID)
       }
     });
   }
@@ -300,6 +305,97 @@ __webpack_require__.r(__webpack_exports__);
   
 Object(camunda_modeler_plugin_helpers__WEBPACK_IMPORTED_MODULE_0__["registerBpmnJSPlugin"])(_BaSysPlugin__WEBPACK_IMPORTED_MODULE_1__["default"]);
 Object(camunda_modeler_plugin_helpers__WEBPACK_IMPORTED_MODULE_0__["registerBpmnJSPlugin"])(_AccessAASPluginProvider__WEBPACK_IMPORTED_MODULE_2__["default"]);
+
+/***/ }),
+
+/***/ "./client/util.js":
+/*!************************!*\
+  !*** ./client/util.js ***!
+  \************************/
+/*! exports provided: _getCommentsElement, getComments, setComments, addComment, removeComment */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_getCommentsElement", function() { return _getCommentsElement; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getComments", function() { return getComments; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setComments", function() { return setComments; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addComment", function() { return addComment; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeComment", function() { return removeComment; });
+function _getCommentsElement(element, create) {
+
+    var bo = element.businessObject;
+  
+    var docs = bo.get('documentation');
+  
+    var comments;
+  
+    // get comments node
+    docs.some(function(d) {
+      return d.textFormat === 'text/x-comments' && (comments = d);
+    });
+  
+    // create if not existing
+    if (!comments && create) {
+      comments = bo.$model.create('bpmn:Documentation', { textFormat: 'text/x-comments' });
+      docs.push(comments);
+    }
+  
+    return comments;
+  }
+  
+  function getComments(element) {
+    var doc = _getCommentsElement(element);
+  
+    if (!doc || !doc.text) {
+      return [];
+    } else {
+      return doc.text.split(/;\r?\n;/).map(function(str) {
+        return str.split(/:/, 2);
+      });
+    }
+  }
+  
+  function setComments(element, comments) {
+    var doc = _getCommentsElement(element, true);
+  
+    var str = comments.map(function(c) {
+      return c.join(':');
+    }).join(';\n;');
+  
+    doc.text = str;
+  }
+  
+  function addComment(element, author, str) {
+    var comments = getComments(element);
+    console.log(comments)
+    comments.push([ author, str ]);
+  
+    setComments(element, comments);
+  }
+  
+  function removeComment(element, comment) {
+    var comments = getComments(element);
+  
+    var idx = -1;
+  
+    comments.some(function(c, i) {
+  
+      var matches = c[0] === comment[0] && c[1] === comment[1];
+  
+      if (matches) {
+        idx = i;
+      }
+  
+      return matches;
+    });
+  
+    if (idx !== -1) {
+      comments.splice(idx, 1);
+    }
+  
+    setComments(element, comments);
+  }
 
 /***/ }),
 
