@@ -122,7 +122,7 @@ function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry,
         }
       });
       if (generalTab.length > 0) {
-        let newGeneralTab = this.updateGeneralTab(generalTab[0], newHtml, translate);
+        let newGeneralTab = this.updateGeneralTab(generalTab[0], newHtml);
         array[generalIndex] = newGeneralTab;
       }
       return array;
@@ -152,22 +152,31 @@ AccessAASPluginProvider.prototype.generateSelect = function(assets){
   let html = '<label for="id-short">Id Short</label><select id="id-short" name="assetID"><option value="">';
 
   for (let i = 0; i < assets.length; i++){
-    html += `<option value="idShort.${assets[i]}">${assets[i]}</option>`;
+    html += `<option value="${assets[i]}">${assets[i]}</option>`;
   }
   html += '</select>';
 
   return html;
 }
 
-AccessAASPluginProvider.prototype.updateGeneralTab = function(generalTab, newHtml, translate) {
+AccessAASPluginProvider.prototype.updateGeneralTab = function(generalTab, newHtml) {
+  let paramID = "id-short";
 
   if (generalTab.groups.length > 0 && generalTab.groups[0].entries.length > 0) {
     generalTab.groups[0].entries.splice(2, 0, {
       html: newHtml,
-      id: "id-short",
+      id: paramID,
       set: function(element, values){
-        console.log(values.assetID)
-        Object(_util__WEBPACK_IMPORTED_MODULE_0__["addComment"])(element, "ID-Short", values.assetID)
+
+        //Remove previous comment
+        Object(_util__WEBPACK_IMPORTED_MODULE_0__["getComments"])(element).forEach(function(val) {
+          if (val[0] == paramID){
+            Object(_util__WEBPACK_IMPORTED_MODULE_0__["removeComment"])(element, val);
+          }
+        })
+
+        //Add new comment
+        Object(_util__WEBPACK_IMPORTED_MODULE_0__["addComment"])(element, paramID, values.assetID)
       }
     });
   }
@@ -368,7 +377,6 @@ function _getCommentsElement(element, create) {
   
   function addComment(element, author, str) {
     var comments = getComments(element);
-    console.log(comments)
     comments.push([ author, str ]);
   
     setComments(element, comments);

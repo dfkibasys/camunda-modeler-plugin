@@ -44,7 +44,6 @@ export function _getCommentsElement(element, create) {
   
   export function addComment(element, author, str) {
     var comments = getComments(element);
-    console.log(comments)
     comments.push([ author, str ]);
   
     setComments(element, comments);
