@@ -110,7 +110,7 @@ function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry,
   let camunda = new CamundaPropertiesProvider(eventBus, canvas, bpmnFactory, elementRegistry, elementTemplates, translate);
   let self = this;
 
-  self.getAssets.then(assets => {
+  self.getAssets().then(assets => {
     let newHtml = self.generateSelect(assets);
 
     self.getTabs = function(element) {
@@ -135,19 +135,21 @@ function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry,
 
 };
 
-AccessAASPluginProvider.prototype.getAssets = new Promise(function(resolve, reject) {
-  let assets = [];
-  axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("http://127.0.0.1:4999/api/v1/registry").then((res) => {
-    for (let i = 0; i < res.data.length; i++) {
-      assets.push(res.data[i].asset.idShort);
-    }
-  }).catch(err => {
-    reject(err);
+AccessAASPluginProvider.prototype.getAssets = function() {
+  return new Promise(function(resolve, reject) {
+    let assets = [];
+    axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("http://127.0.0.1:4999/api/v1/registry").then((res) => {
+      for (let i = 0; i < res.data.length; i++) {
+        assets.push(res.data[i].asset.idShort);
+      }
+    }).catch(err => {
+      reject(err);
+    })
+    .finally(() => {
+    resolve(assets);
+    })
   })
-  .finally(() => {
-   resolve(assets);
-  })
-});
+};
 
 AccessAASPluginProvider.prototype.generateSelect = function(assets){
   let html = '<label for="id-short">Id Short</label><select id="id-short" name="assetID" data-value><option value="">';
