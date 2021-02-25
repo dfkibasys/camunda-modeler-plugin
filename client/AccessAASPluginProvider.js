@@ -54,7 +54,7 @@ AccessAASPluginProvider.prototype.getAssets = new Promise(function(resolve, reje
 });
 
 AccessAASPluginProvider.prototype.generateSelect = function(assets){
-  let html = '<label for="id-short">Id Short</label><select id="id-short" name="assetID"><option value="">';
+  let html = '<label for="id-short">Id Short</label><select id="id-short" name="assetID" data-value><option value="">';
 
   for (let i = 0; i < assets.length; i++){
     html += `<option value="${assets[i]}">${assets[i]}</option>`;
@@ -87,6 +87,19 @@ AccessAASPluginProvider.prototype.updateGeneralTab = function(generalTab, newHtm
         //This needs to be defined in camunda namespace via camunda-bpmn-moddle first to avoid warnings
         return cmdHelper.updateBusinessObject(element, element.businessObject, {}); 
       },
+      get: function(element, node) {
+        let assetID;
+
+        getComments(element).forEach(function(val) {
+          if (val[0] == paramID){
+            assetID = val[1]
+          }
+        })
+
+        return {
+          assetID: assetID
+        }
+      }
     });
   }
   return generalTab;
