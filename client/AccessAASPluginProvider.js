@@ -39,18 +39,19 @@ function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry,
 
 };
 
-AccessAASPluginProvider.prototype.getAssets = function() {
-  return new Promise(function(resolve, reject) {
+AccessAASPluginProvider.prototype.getAssets = () => {
+  return new Promise((resolve, reject) => 
+  {
     let assets = [];
-    axios.get("http://127.0.0.1:4999/api/v1/registry").then((res) => {
+    axios.get("http://127.0.0.1:4999/api/v1/registry")
+    .then(res => {
       for (let i = 0; i < res.data.length; i++) {
         assets.push(res.data[i].asset.idShort);
       }
-    }).catch(err => {
-      reject(err);
+      resolve(assets);
     })
-    .finally(() => {
-    resolve(assets);
+    .catch(err => {
+      reject(err);
     })
   })
 };
