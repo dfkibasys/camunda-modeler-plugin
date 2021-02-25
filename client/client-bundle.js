@@ -103,6 +103,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 let CamundaPropertiesProvider = __webpack_require__(/*! bpmn-js-properties-panel/lib/provider/camunda/CamundaPropertiesProvider */ "./node_modules/bpmn-js-properties-panel/lib/provider/camunda/CamundaPropertiesProvider.js");
+let cmdHelper = __webpack_require__(/*! bpmn-js-properties-panel/lib/helper/CmdHelper */ "./node_modules/bpmn-js-properties-panel/lib/helper/CmdHelper.js");
 
 
 function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry, elementTemplates, translate) {
@@ -177,7 +178,11 @@ AccessAASPluginProvider.prototype.updateGeneralTab = function(generalTab, newHtm
 
         //Add new comment
         Object(_util__WEBPACK_IMPORTED_MODULE_0__["addComment"])(element, paramID, values.assetID)
-      }
+
+        //Replacing {} with 'values' will add 'assetID' to BPMN 
+        //This needs to be defined in camunda namespace via camunda-bpmn-moddle first to avoid warnings
+        return cmdHelper.updateBusinessObject(element, element.businessObject, {}); 
+      },
     });
   }
   return generalTab;
