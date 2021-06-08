@@ -4,7 +4,7 @@ import entryFactory from 'bpmn-js-properties-panel/lib/factory/EntryFactory';
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 import axios from 'axios';
 
-let options = [];
+let options;
 const LOW_PRIORITY = 500;
 
 // Create the custom Basys tab.
@@ -28,6 +28,7 @@ function createBasysTabGroups(element, translate) {
 
 function AccessAASProvider(propertiesPanel, translate) {
   let self = this;
+  options = [];
 
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 

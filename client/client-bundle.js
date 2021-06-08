@@ -106,7 +106,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-let options = [];
+let options;
 const LOW_PRIORITY = 500;
 
 // Create the custom Basys tab.
@@ -130,6 +130,7 @@ function createBasysTabGroups(element, translate) {
 
 function AccessAASProvider(propertiesPanel, translate) {
   let self = this;
+  options = [];
 
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 
