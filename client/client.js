@@ -3,7 +3,7 @@ import {
   } from 'camunda-modeler-plugin-helpers';
 
 import BaSysPlugin from './BaSysPlugin';
-import AccessAASPluginProvider from './AccessAASPluginProvider';
+import accessAASProviderModule from './AccessAASProvider';
   
 registerBpmnJSPlugin(BaSysPlugin);
-registerBpmnJSPlugin(AccessAASPluginProvider);
+registerBpmnJSPlugin(accessAASProviderModule);
