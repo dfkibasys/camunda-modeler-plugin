@@ -84,7 +84,7 @@ let getProps = function(group, element, translate) {
   if (is(element, 'bpmn:Task')) {
     group.entries.push(entryFactory.selectBox(translate, {
       id: "short",
-      label : 'ID Short',
+      label : 'Component ID',
       selectOptions: options,
       modelProperty: "id-short",
       emptyParameter: false

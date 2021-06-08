@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "camunda-bpmn-moddle": "^5.1.2",
     "lodash": "^3.0.0"
   }
 }

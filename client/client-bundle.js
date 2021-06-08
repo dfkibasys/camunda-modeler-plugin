@@ -186,7 +186,7 @@ let getProps = function(group, element, translate) {
   if (Object(bpmn_js_lib_util_ModelUtil__WEBPACK_IMPORTED_MODULE_1__["is"])(element, 'bpmn:Task')) {
     group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
       id: "short",
-      label : 'ID Short',
+      label : 'Component ID',
       selectOptions: options,
       modelProperty: "id-short",
       emptyParameter: false
@@ -312,13 +312,57 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var camunda_modeler_plugin_helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! camunda-modeler-plugin-helpers */ "./node_modules/camunda-modeler-plugin-helpers/index.js");
 /* harmony import */ var _BaSysPlugin__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./BaSysPlugin */ "./client/BaSysPlugin.js");
 /* harmony import */ var _AccessAASProvider__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./AccessAASProvider */ "./client/AccessAASProvider.js");
+/* harmony import */ var _descriptors_basys__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./descriptors/basys */ "./client/descriptors/basys.js");
 
 
 
 
-  
+
+
 Object(camunda_modeler_plugin_helpers__WEBPACK_IMPORTED_MODULE_0__["registerBpmnJSPlugin"])(_BaSysPlugin__WEBPACK_IMPORTED_MODULE_1__["default"]);
 Object(camunda_modeler_plugin_helpers__WEBPACK_IMPORTED_MODULE_0__["registerBpmnJSPlugin"])(_AccessAASProvider__WEBPACK_IMPORTED_MODULE_2__["default"]);
+
+Object(camunda_modeler_plugin_helpers__WEBPACK_IMPORTED_MODULE_0__["registerBpmnJSModdleExtension"])(_descriptors_basys__WEBPACK_IMPORTED_MODULE_3__["default"]);
+
+
+
+/***/ }),
+
+/***/ "./client/descriptors/basys.js":
+/*!*************************************!*\
+  !*** ./client/descriptors/basys.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+let basysModdleDescriptor = {
+    "name": "Basys",
+    "prefix": "basys",
+    "uri": "http://basys",
+    "xml": {
+      "tagAlias": "lowerCase"
+    },
+    "associations": [],
+    "types": [
+      {
+        "name": "BasysTask",
+        "extends": [
+          "bpmn:Task"
+        ],
+        "properties": [
+          {
+            "name": "id-short",
+            "isAttr": true,
+            "type": "String"
+          }
+        ]
+      }
+    ]
+  }
+
+/* harmony default export */ __webpack_exports__["default"] = (basysModdleDescriptor);
 
 /***/ }),
 
