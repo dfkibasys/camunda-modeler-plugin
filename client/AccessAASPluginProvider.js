@@ -10,11 +10,11 @@ let CamundaPropertiesProvider = require('bpmn-js-properties-panel/lib/provider/c
 let cmdHelper = require('bpmn-js-properties-panel/lib/helper/CmdHelper');
 import axios from 'axios';
 
-function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry, elementTemplates, translate) {
-  let camunda = new CamundaPropertiesProvider(eventBus, canvas, bpmnFactory, elementRegistry, elementTemplates, translate);
+function AccessAASPluginProvider(injector) {
+  let camunda = new CamundaPropertiesProvider(...CamundaPropertiesProvider.$inject.map(dependency => injector.get(dependency)));
   let self = this;
 
-  self.getAssets().then(assets => {
+  self.getAssets.then(assets => {
     let newHtml = self.generateSelect(assets);
 
     self.getTabs = function(element) {
@@ -39,11 +39,10 @@ function AccessAASPluginProvider(eventBus, canvas, bpmnFactory, elementRegistry,
 
 };
 
-AccessAASPluginProvider.prototype.getAssets = () => {
-  return new Promise((resolve, reject) => 
+AccessAASPluginProvider.prototype.getAssets = new Promise((resolve, reject) => 
   {
     let assets = [];
-    axios.get("http://127.0.0.1:4999/api/v1/registry")
+    axios.get("http://10.2.10.4:4999/api/v1/registry")
     .then(res => {
       for (let i = 0; i < res.data.length; i++) {
         assets.push(res.data[i].asset.idShort);
@@ -53,8 +52,7 @@ AccessAASPluginProvider.prototype.getAssets = () => {
     .catch(err => {
       reject(err);
     })
-  })
-};
+  });
 
 AccessAASPluginProvider.prototype.generateSelect = function(assets){
   let html = '<label for="id-short">Id Short</label><select id="id-short" name="assetID" data-value><option value="">';
@@ -109,7 +107,7 @@ AccessAASPluginProvider.prototype.updateGeneralTab = function(generalTab, newHtm
 
 };
 
-AccessAASPluginProvider.$inject = ['eventBus', 'canvas', 'bpmnFactory', 'elementRegistry', 'elementTemplates', 'translate'];
+AccessAASPluginProvider.$inject = ['injector'];
 
 function AccessAASPlugin() {
 
