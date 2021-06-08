@@ -134,11 +134,13 @@ function AccessAASProvider(propertiesPanel, translate) {
 
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 
-  getAssets.then(assets => {
+  getAssets.then(([assets, assetsList]) => {
 
-    for (let i = 0; i < assets.length; i++){
-      options.push({name: assets[i], value: assets[i]})
-    }
+    console.log(assets, assetsList)
+
+    assetsList.forEach((idShort) => {
+      options.push({name: idShort, value: idShort})
+    })
 
     self.getTabs = function(element) {
       return function(entries) {
@@ -166,18 +168,64 @@ function AccessAASProvider(propertiesPanel, translate) {
 
 let getAssets = new Promise((resolve, reject) => 
   {
-    let assets = [];
+    let assets = {};
+    let assetsList = [];
+
     axios__WEBPACK_IMPORTED_MODULE_2___default.a.get("http://10.2.10.4:4000/api/v1/registry")
     .then(res => {
       for (let i = 0; i < res.data.length; i++) {
-        assets.push(res.data[i].asset.idShort);
+        let idShort = res.data[i].asset.idShort;
+        assets[idShort] = { idShort };
+
+        //submodel loop
+        for (let j = 0; j < res.data[i].submodels.length; j++) {
+            if (res.data[i].submodels[j].idShort === "Capabilities"){
+              let capabilityAddress = res.data[i].submodels[j].endpoints[0].address;
+              capabilityAddress = capabilityAddress.replace(/localhost/i, "10.2.10.4") // temporary fix
+              assets[idShort]['capabilityAddress'] = capabilityAddress;
+            }
+        }
+
+        assetsList.push(idShort);
+
       }
-      resolve(assets);
+      getCapabilities(assetsList, assets).then((assets) => {
+        resolve([assets, assetsList]);
+      })    
+      .catch(err => {
+        reject(err);
+      })
+
     })
     .catch(err => {
       reject(err);
     })
   });
+
+let getCapabilities = function(assetsList, assets){
+
+  const caps = function(resolve, reject) {
+    assetsList.forEach((idShort) => {
+      
+      let url = assets[idShort]['capabilityAddress'];
+      if (url == undefined) return;
+
+      axios__WEBPACK_IMPORTED_MODULE_2___default.a.get(url)
+      .then(res => {
+        assets[idShort]['capabilities'] = [];
+        for (let i = 0; i < res.data.submodelElements[0].value.length; i++) {
+          assets[idShort]['capabilities'].push(res.data.submodelElements[0].value[i].idShort);
+        }
+        resolve(assets)
+      })
+      .catch((err) => {
+        reject(err);
+      })
+    })
+  }
+
+  return new Promise(caps);
+}
 
 let getProps = function(group, element, translate) {
 
