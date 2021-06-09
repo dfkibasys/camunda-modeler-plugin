@@ -106,7 +106,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-let options;
+let assetOptions, capOptions;
 const LOW_PRIORITY = 500;
 
 // Create the custom Basys tab.
@@ -130,7 +130,8 @@ function createBasysTabGroups(element, translate) {
 
 function AccessAASProvider(propertiesPanel, translate) {
   let self = this;
-  options = [];
+  assetOptions = [];
+  capOptions = [];
 
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
 
@@ -139,7 +140,15 @@ function AccessAASProvider(propertiesPanel, translate) {
     console.log(assets, assetsList)
 
     assetsList.forEach((idShort) => {
-      options.push({name: idShort, value: idShort})
+      assetOptions.push({name: idShort, value: idShort})
+    })
+
+    let {caps, capsList} = invertObject(assets, assetsList);
+
+    console.log(caps, capsList)
+
+    capsList.forEach((cap) => {
+      capOptions.push({name: cap, value: cap})
     })
 
     self.getTabs = function(element) {
@@ -205,23 +214,32 @@ let getAssets = new Promise((resolve, reject) =>
 let getCapabilities = function(assetsList, assets){
 
   const caps = function(resolve, reject) {
+    let requestUrls = [];
+    let ids = [];
+
     assetsList.forEach((idShort) => {
-      
       let url = assets[idShort]['capabilityAddress'];
       if (url == undefined) return;
 
-      axios__WEBPACK_IMPORTED_MODULE_2___default.a.get(url)
-      .then(res => {
-        assets[idShort]['capabilities'] = [];
-        for (let i = 0; i < res.data.submodelElements[0].value.length; i++) {
-          assets[idShort]['capabilities'].push(res.data.submodelElements[0].value[i].idShort);
-        }
-        resolve(assets)
-      })
-      .catch((err) => {
-        reject(err);
-      })
+      //TODO: try to combine both arrays
+      requestUrls.push(axios__WEBPACK_IMPORTED_MODULE_2___default.a.get(url))
+      ids.push(idShort)
     })
+
+    axios__WEBPACK_IMPORTED_MODULE_2___default.a.all(requestUrls)
+    .then(axios__WEBPACK_IMPORTED_MODULE_2___default.a.spread((...args) => {
+      for (let i = 0; i < args.length; i++) {
+        assets[ids[i]]['capabilities'] = [];
+        for (let j = 0; j < args[i].data.submodelElements[0].value.length; j++) {
+          assets[ids[i]]['capabilities'].push(args[i].data.submodelElements[0].value[j].idShort);
+        }
+      }
+      resolve(assets)
+    }))
+    .catch((err) => {
+      reject(err);
+    })
+
   }
 
   return new Promise(caps);
@@ -233,14 +251,44 @@ let getProps = function(group, element, translate) {
   // element is a task event.
 
   if (Object(bpmn_js_lib_util_ModelUtil__WEBPACK_IMPORTED_MODULE_1__["is"])(element, 'bpmn:Task')) {
-    group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
-      id: "short",
+    let selBox = bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
+      id: "component-id",
       label : 'Component ID',
-      selectOptions: options,
-      modelProperty: "id-short",
+      selectOptions: assetOptions,
+      modelProperty: "component-id",
       emptyParameter: false
-      }));
+      })
+
+    group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
+      id: "cap",
+      label : 'Capability',
+      selectOptions: capOptions,
+      modelProperty: "capability",
+      emptyParameter: false
+    }));
+
+    group.entries.push(selBox);
+
   }
+}
+
+let invertObject = function(assets, assetsList){
+  let caps = [];
+  let capsList = [];
+
+  assetsList.forEach((idShort) => {
+    if (assets[idShort].capabilities !== undefined){
+      assets[idShort].capabilities.forEach(cap => {
+        if (caps[cap] === undefined){
+          caps[cap] = []
+          capsList.push(cap)
+        }
+        caps[cap].push(idShort)
+      })
+    }
+  })
+
+  return {caps, capsList};
 }
 
 AccessAASProvider.$inject = ['propertiesPanel', 'translate'];
@@ -402,7 +450,12 @@ let basysModdleDescriptor = {
         ],
         "properties": [
           {
-            "name": "id-short",
+            "name": "component-id",
+            "isAttr": true,
+            "type": "String"
+          },
+          {
+            "name": "capability",
             "isAttr": true,
             "type": "String"
           }

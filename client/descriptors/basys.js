@@ -14,7 +14,12 @@ let basysModdleDescriptor = {
         ],
         "properties": [
           {
-            "name": "id-short",
+            "name": "component-id",
+            "isAttr": true,
+            "type": "String"
+          },
+          {
+            "name": "capability",
             "isAttr": true,
             "type": "String"
           }
