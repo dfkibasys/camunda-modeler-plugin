@@ -186,9 +186,9 @@ let getComponentProps = (group, element, translate) => {
 
         //hack to trigger a task reselect
         document.getElementsByClassName("bpmn-icon-subprocess-expanded")[0].click()
-
-        return cmdHelper.updateBusinessObject(element, element.businessObject, values);
-       }
+        
+        return cmdHelper.updateBusinessObject(element, element.businessObject, {'name': values.capability, 'capability': values.capability})
+      }
     }));
 
     group.entries.push(entryFactory.selectBox(translate, {
