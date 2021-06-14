@@ -7,9 +7,11 @@ let cmdHelper = require('bpmn-js-properties-panel/lib/helper/CmdHelper');
 
 let assetOptions, capOptions;
 let capabilities;
+let basys_compatibility = null;
+
 const LOW_PRIORITY = 500;
 
-let aas_server_url = "http://10.2.10.4:4000/api/v1/registry"
+let aas_server_url = "http://localhost:4000/api/v1/registry"
 
 function AccessAASProvider(propertiesPanel, translate) {
   assetOptions = [];
@@ -236,29 +238,30 @@ let getConfigProps = (group, element, translate) => {
       }
     });
 
-    group.entries.push(entryFactory.toggleSwitch(translate, {
-      id: "toggle-switch",
-      label: "Make activity Basys-compatible",
-      modelProperty: 'isActive',
-      labelOn: 'On',
-      labelOff: 'Off',
-      descriptionOff: 'Adds needed properties to activity',
-      isOn: function(){
+    if (is(element, 'bpmn:ServiceTask')) {
 
-      },
-      set: function(element, values, node) {
-        let commands = [];
-        let res = {};
+      group.entries.push(entryFactory.toggleSwitch(translate, {
+        id: "toggle-switch",
+        label: "Basys compatibility",
+        modelProperty: 'isActive',
+        descriptionOn: 'Properties have been added',
+        descriptionOff: 'Properties need to be added',
+        labelOn: "Active",
+        labelOff: "Inactive",
+        isOn: function(){
+        return basys_compatibility;
+        },
+        get: function(element) {
+          let topic = element.businessObject.get('camunda:topic');
+          basys_compatibility = (topic !== undefined && topic === "ControlComponent");
+          return {'isActive': basys_compatibility};
+        },
+        set: function(element, values, node) {
+          return cmdHelper.updateBusinessObject(element, element.businessObject, {'camunda:topic': 'ControlComponent', 'camunda:type': "external"})
+        }
+      }));
 
-        res['isActive'] = !!values['isActive'];
-
-        //check for camunda:type and camunda:topic here if switch is active
-        commands.push(cmdHelper.updateProperties(element, res))
-        commands.push(cmdHelper.updateBusinessObject(element, element.businessObject, {'camunda:topic': 'ControlComponent', 'camunda:type': "external"}))
-
-        return commands;
-      },
-    }));
+    }
  
 }
 
