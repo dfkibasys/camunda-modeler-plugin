@@ -269,7 +269,7 @@ let getComponentProps = (group, element, translate) => {
   // Only return an entry, if the currently selected
   // element is a task event.
 
-  if (Object(bpmn_js_lib_util_ModelUtil__WEBPACK_IMPORTED_MODULE_1__["is"])(element, 'bpmn:Task')) {
+  if (Object(bpmn_js_lib_util_ModelUtil__WEBPACK_IMPORTED_MODULE_1__["is"])(element, 'bpmn:ServiceTask')) {
 
     group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
       id: "cap",
@@ -337,6 +337,30 @@ let getConfigProps = (group, element, translate) => {
         requestServerData()
       }
     });
+
+    group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.toggleSwitch(translate, {
+      id: "toggle-switch",
+      label: "Make activity Basys-compatible",
+      modelProperty: 'isActive',
+      labelOn: 'On',
+      labelOff: 'Off',
+      descriptionOff: 'Adds needed properties to activity',
+      isOn: function(){
+
+      },
+      set: function(element, values, node) {
+        let commands = [];
+        let res = {};
+
+        res['isActive'] = !!values['isActive'];
+
+        //check for camunda:type and camunda:topic here if switch is active
+        commands.push(cmdHelper.updateProperties(element, res))
+        commands.push(cmdHelper.updateBusinessObject(element, element.businessObject, {'camunda:topic': 'ControlComponent', 'camunda:type': "external"}))
+
+        return commands;
+      },
+    }));
  
 }
 
@@ -435,6 +459,7 @@ function BaSysPlugin(eventBus, overlays) {
     elementOverlays[element.id] = [];
 
     if (element.businessObject.topic === 'BasysTask' ||
+        element.businessObject.topic === 'ControlComponent' ||
       (typeof element.businessObject.modelerTemplate !== 'undefined' &&
         element.businessObject.modelerTemplate.includes('de.dfki.cos.basys'))
     ) {

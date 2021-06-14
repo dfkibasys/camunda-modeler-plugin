@@ -56,6 +56,7 @@ function BaSysPlugin(eventBus, overlays) {
     elementOverlays[element.id] = [];
 
     if (element.businessObject.topic === 'BasysTask' ||
+        element.businessObject.topic === 'ControlComponent' ||
       (typeof element.businessObject.modelerTemplate !== 'undefined' &&
         element.businessObject.modelerTemplate.includes('de.dfki.cos.basys'))
     ) {

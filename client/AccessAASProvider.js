@@ -167,7 +167,7 @@ let getComponentProps = (group, element, translate) => {
   // Only return an entry, if the currently selected
   // element is a task event.
 
-  if (is(element, 'bpmn:Task')) {
+  if (is(element, 'bpmn:ServiceTask')) {
 
     group.entries.push(entryFactory.selectBox(translate, {
       id: "cap",
@@ -235,6 +235,30 @@ let getConfigProps = (group, element, translate) => {
         requestServerData()
       }
     });
+
+    group.entries.push(entryFactory.toggleSwitch(translate, {
+      id: "toggle-switch",
+      label: "Make activity Basys-compatible",
+      modelProperty: 'isActive',
+      labelOn: 'On',
+      labelOff: 'Off',
+      descriptionOff: 'Adds needed properties to activity',
+      isOn: function(){
+
+      },
+      set: function(element, values, node) {
+        let commands = [];
+        let res = {};
+
+        res['isActive'] = !!values['isActive'];
+
+        //check for camunda:type and camunda:topic here if switch is active
+        commands.push(cmdHelper.updateProperties(element, res))
+        commands.push(cmdHelper.updateBusinessObject(element, element.businessObject, {'camunda:topic': 'ControlComponent', 'camunda:type': "external"}))
+
+        return commands;
+      },
+    }));
  
 }
 
