@@ -107,33 +107,51 @@ __webpack_require__.r(__webpack_exports__);
 
 
 let assetOptions, capOptions;
+let capabilities;
 const LOW_PRIORITY = 500;
+let reference = null;
+
+let aas_server_url = "http://localhost:4000/api/v1/registry"
 
 // Create the custom Basys tab.
 // The properties are organized in groups.
 function createBasysTabGroups(element, translate) {
 
+    // Create a group called "Config".
+    var configGroup = {
+      id: 'config',
+      label: 'Config',
+      entries: []
+    };
+
   // Create a group called "Component".
-  var idShortGroup = {
+  var componentGroup = {
     id: 'component',
     label: 'Component',
     entries: []
   };
 
-  // Add the props to the id short group.
-  getProps(idShortGroup, element, translate);
+  // Add the props to all of the groups
+  getConfigProps(configGroup, element, translate);
+  getComponentProps(componentGroup, element, translate);
 
   return [
-    idShortGroup
+    configGroup,
+    componentGroup
   ];
 }
 
 function AccessAASProvider(propertiesPanel, translate) {
-  let self = this;
+  reference = this;
   assetOptions = [];
   capOptions = [];
 
   propertiesPanel.registerProvider(LOW_PRIORITY, this);
+
+  requestServerData(translate);
+};
+
+function requestServerData(translate){
 
   getAssets.then(([assets, assetsList]) => {
 
@@ -147,11 +165,13 @@ function AccessAASProvider(propertiesPanel, translate) {
 
     console.log(caps, capsList)
 
+    capabilities = caps;
+
     capsList.forEach((cap) => {
       capOptions.push({name: cap, value: cap})
     })
 
-    self.getTabs = function(element) {
+    reference.getTabs = function(element) {
       return function(entries) {
 
         // Add the "Basys" tab
@@ -172,15 +192,13 @@ function AccessAASProvider(propertiesPanel, translate) {
   }).catch(err => {
     console.error(err)
   })
+}
 
-};
-
-let getAssets = new Promise((resolve, reject) => 
-  {
+let getAssets = new Promise((resolve, reject) => {
     let assets = {};
     let assetsList = [];
 
-    axios__WEBPACK_IMPORTED_MODULE_2___default.a.get("http://10.2.10.4:4000/api/v1/registry")
+    axios__WEBPACK_IMPORTED_MODULE_2___default.a.get(aas_server_url)
     .then(res => {
       for (let i = 0; i < res.data.length; i++) {
         let idShort = res.data[i].asset.idShort;
@@ -190,7 +208,7 @@ let getAssets = new Promise((resolve, reject) =>
         for (let j = 0; j < res.data[i].submodels.length; j++) {
             if (res.data[i].submodels[j].idShort === "Capabilities"){
               let capabilityAddress = res.data[i].submodels[j].endpoints[0].address;
-              capabilityAddress = capabilityAddress.replace(/localhost/i, "10.2.10.4") // temporary fix
+              //capabilityAddress = capabilityAddress.replace(/localhost/i, "10.2.10.4") // temporary fix
               assets[idShort]['capabilityAddress'] = capabilityAddress;
             }
         }
@@ -209,7 +227,7 @@ let getAssets = new Promise((resolve, reject) =>
     .catch(err => {
       reject(err);
     })
-  });
+});
 
 let getCapabilities = function(assetsList, assets){
 
@@ -245,31 +263,70 @@ let getCapabilities = function(assetsList, assets){
   return new Promise(caps);
 }
 
-let getProps = function(group, element, translate) {
+let getComponentProps = function(group, element, translate) {
 
   // Only return an entry, if the currently selected
   // element is a task event.
 
   if (Object(bpmn_js_lib_util_ModelUtil__WEBPACK_IMPORTED_MODULE_1__["is"])(element, 'bpmn:Task')) {
-    let selBox = bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
+
+    let entry = bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
       id: "component-id",
       label : 'Component ID',
       selectOptions: assetOptions,
       modelProperty: "component-id",
-      emptyParameter: false
-      })
+      emptyParameter: false,
+    })
 
     group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
       id: "cap",
       label : 'Capability',
       selectOptions: capOptions,
       modelProperty: "capability",
-      emptyParameter: false
+      emptyParameter: false,
     }));
 
-    group.entries.push(selBox);
+    group.entries.push(entry);
+
+    group.entries.push({
+      html: "<button id='feasability-button' data-action='checkFeasability'>Check feasability</button>",
+      id: "form-fields-feasability-button",
+      checkFeasability: function(element, node) {
+        node.childNodes[0].style.backgroundColor = "#bada55"
+
+        setTimeout(function(){  
+          node.childNodes[0].style.backgroundColor = "#efefef" 
+        }, 2000);
+      }
+    });
 
   }
+}
+
+let getConfigProps = function(group, element, translate) {
+
+    group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.textField(translate, {
+      id: "url",
+      description: "Enter AAS server url.",
+      label : 'AAS Server',
+      modelProperty: "url",
+      get: function(element, node) {
+          return { url: aas_server_url };
+      },
+      set: function(element, values){
+        aas_server_url = values.url
+      }
+    }));
+
+    group.entries.push({
+      html: "<button id='request-button' data-action='requestData'>Request AAS server data</button>",
+      id: "form-fields-request-button",
+      requestData: function(element, node) {
+        console.log("Request AAS server data")
+        requestServerData(translate)
+      }
+    });
+ 
 }
 
 let invertObject = function(assets, assetsList){
