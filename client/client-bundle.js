@@ -110,20 +110,47 @@ let cmdHelper = __webpack_require__(/*! bpmn-js-properties-panel/lib/helper/CmdH
 let assetOptions, capOptions;
 let capabilities;
 const LOW_PRIORITY = 500;
-let reference = null;
 
-let aas_server_url = "http://localhost:4000/api/v1/registry"
+let aas_server_url = "http://10.2.10.4:4000/api/v1/registry"
+
+function AccessAASProvider(propertiesPanel, translate) {
+  assetOptions = [];
+  capOptions = [];
+
+  propertiesPanel.registerProvider(LOW_PRIORITY, this);
+
+  this.getTabs = function(element) {
+    return function(entries) {
+
+      // Add the "Basys" tab
+      var basysTab = {
+        id: 'basys',
+        label: 'Basys',
+        groups: createBasysTabGroups(element, translate)
+      };
+
+      entries.push(basysTab);
+  
+      // Show general + "Basys" tab
+      return entries;
+    }
+
+  };
+
+  requestServerData();
+
+};
 
 // Create the custom Basys tab.
 // The properties are organized in groups.
-function createBasysTabGroups(element, translate) {
+let createBasysTabGroups = (element, translate) => {
 
-    // Create a group called "Config".
-    var configGroup = {
-      id: 'config',
-      label: 'Config',
-      entries: []
-    };
+  // Create a group called "Config".
+  var configGroup = {
+    id: 'config',
+    label: 'Config',
+    entries: []
+  };
 
   // Create a group called "Component".
   var componentGroup = {
@@ -142,21 +169,9 @@ function createBasysTabGroups(element, translate) {
   ];
 }
 
-function AccessAASProvider(propertiesPanel, translate) {
-  reference = this;
-  assetOptions = [];
-  capOptions = [];
+let requestServerData = () => {
 
-  propertiesPanel.registerProvider(LOW_PRIORITY, this);
-
-  requestServerData(translate);
-};
-
-function requestServerData(translate){
-
-  getAssets.then(([assets, assetsList]) => {
-
-    console.log(assets, assetsList)
+  getAssets().then(([assets, assetsList]) => {
 
     assetsList.forEach((idShort) => {
       assetOptions.push({name: idShort, value: idShort})
@@ -164,38 +179,20 @@ function requestServerData(translate){
 
     let {caps, capsList} = invertObject(assets, assetsList);
 
-    console.log(caps, capsList)
-
     capabilities = caps;
 
     capsList.forEach((cap) => {
       capOptions.push({name: cap, value: cap})
     })
 
-    reference.getTabs = function(element) {
-      return function(entries) {
-
-        // Add the "Basys" tab
-        var basysTab = {
-          id: 'basys',
-          label: 'Basys',
-          groups: createBasysTabGroups(element, translate)
-        };
-  
-        entries.push(basysTab);
-    
-        // Show general + "Basys" tab
-        return entries;
-      }
-
-    };
-
   }).catch(err => {
     console.error(err)
   })
 }
 
-let getAssets = new Promise((resolve, reject) => {
+let getAssets = () => {
+  const request = function(resolve, reject) {
+
     let assets = {};
     let assetsList = [];
 
@@ -209,7 +206,6 @@ let getAssets = new Promise((resolve, reject) => {
         for (let j = 0; j < res.data[i].submodels.length; j++) {
             if (res.data[i].submodels[j].idShort === "Capabilities"){
               let capabilityAddress = res.data[i].submodels[j].endpoints[0].address;
-              //capabilityAddress = capabilityAddress.replace(/localhost/i, "10.2.10.4") // temporary fix
               assets[idShort]['capabilityAddress'] = capabilityAddress;
             }
         }
@@ -228,9 +224,13 @@ let getAssets = new Promise((resolve, reject) => {
     .catch(err => {
       reject(err);
     })
-});
 
-let getCapabilities = function(assetsList, assets){
+  }
+
+  return new Promise(request);
+}
+
+let getCapabilities = (assetsList, assets) => {
 
   const caps = function(resolve, reject) {
     let requestUrls = [];
@@ -264,20 +264,12 @@ let getCapabilities = function(assetsList, assets){
   return new Promise(caps);
 }
 
-let getComponentProps = function(group, element, translate) {
+let getComponentProps = (group, element, translate) => {
 
   // Only return an entry, if the currently selected
   // element is a task event.
 
   if (Object(bpmn_js_lib_util_ModelUtil__WEBPACK_IMPORTED_MODULE_1__["is"])(element, 'bpmn:Task')) {
-
-    let entry = bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
-      id: "component-id",
-      label : 'Component ID',
-      selectOptions: assetOptions,
-      modelProperty: "component-id",
-      emptyParameter: false,
-    })
 
     group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
       id: "cap",
@@ -299,7 +291,13 @@ let getComponentProps = function(group, element, translate) {
        }
     }));
 
-    group.entries.push(entry);
+    group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.selectBox(translate, {
+      id: "component-id",
+      label : 'Component ID',
+      selectOptions: assetOptions,
+      modelProperty: "component-id",
+      emptyParameter: false,
+    }));
 
     group.entries.push({
       html: "<button id='feasability-button' data-action='checkFeasability'>Check feasability</button>",
@@ -316,7 +314,7 @@ let getComponentProps = function(group, element, translate) {
   }
 }
 
-let getConfigProps = function(group, element, translate) {
+let getConfigProps = (group, element, translate) => {
 
     group.entries.push(bpmn_js_properties_panel_lib_factory_EntryFactory__WEBPACK_IMPORTED_MODULE_0___default.a.textField(translate, {
       id: "url",
@@ -332,17 +330,17 @@ let getConfigProps = function(group, element, translate) {
     }));
 
     group.entries.push({
-      html: "<button id='request-button' data-action='requestData'>Request AAS server data</button>",
+      html: "<button id='request-button' data-action='requestData'>Request data</button>",
       id: "form-fields-request-button",
       requestData: function(element, node) {
         console.log("Request AAS server data")
-        requestServerData(translate)
+        requestServerData()
       }
     });
  
 }
 
-let invertObject = function(assets, assetsList){
+let invertObject = (assets, assetsList) => {
   let caps = [];
   let capsList = [];
 
