@@ -105,6 +105,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+let cmdHelper = __webpack_require__(/*! bpmn-js-properties-panel/lib/helper/CmdHelper */ "./node_modules/bpmn-js-properties-panel/lib/helper/CmdHelper.js");
 
 let assetOptions, capOptions;
 let capabilities;
@@ -284,6 +285,18 @@ let getComponentProps = function(group, element, translate) {
       selectOptions: capOptions,
       modelProperty: "capability",
       emptyParameter: false,
+      set: function(element, values){
+        //data will be read when reselecting the task
+        assetOptions = []
+        capabilities[values.capability].forEach((componentId) => {
+          assetOptions.push({name: componentId, value: componentId})
+        })
+
+        //hack to trigger a task reselect
+        document.getElementsByClassName("bpmn-icon-subprocess-expanded")[0].click()
+
+        return cmdHelper.updateBusinessObject(element, element.businessObject, values);
+       }
     }));
 
     group.entries.push(entry);
