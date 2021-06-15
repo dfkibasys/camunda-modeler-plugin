@@ -306,14 +306,19 @@ let getComponentProps = (group, element, translate) => {
     }));
 
     group.entries.push({
-      html: "<button id='feasibility-button' data-action='checkFeasibility'>Check feasibility</button><i class='fa fa-check'></i>",
+      html: "<button id='feasibility-button' data-action='checkFeasibility'>Check feasibility</button><i class='fa fa-spinner'></i><i class='fa fa-check'></i>",
       id: "form-fields-feasibility-button",
       checkFeasibility: function(element, node) {
-        node.childNodes[1].style.display = "inline-block"
+        node.getElementsByClassName("fa-spinner")[0].style.display = "inline-block"
 
         setTimeout(function(){  
-          node.childNodes[1].style.display = "none" 
+          node.getElementsByClassName("fa-spinner")[0].style.display = "none" 
+          node.getElementsByClassName("fa-check")[0].style.display = "inline-block" 
         }, 2000);
+
+        setTimeout(function(){  
+          node.getElementsByClassName("fa-check")[0].style.display = "none" 
+        }, 4000);
       }
     });
 
