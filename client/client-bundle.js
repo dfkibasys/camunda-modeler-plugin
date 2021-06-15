@@ -302,9 +302,9 @@ let getComponentProps = (group, element, translate) => {
     }));
 
     group.entries.push({
-      html: "<button id='feasability-button' data-action='checkFeasability'>Check feasability</button>",
-      id: "form-fields-feasability-button",
-      checkFeasability: function(element, node) {
+      html: "<button id='feasibility-button' data-action='checkFeasibility'>Check feasibility</button>",
+      id: "form-fields-feasibility-button",
+      checkFeasibility: function(element, node) {
         node.childNodes[0].style.backgroundColor = "#bada55"
 
         setTimeout(function(){  
