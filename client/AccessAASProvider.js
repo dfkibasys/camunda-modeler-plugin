@@ -5,6 +5,8 @@ import { is } from 'bpmn-js/lib/util/ModelUtil';
 import axios from 'axios';
 let cmdHelper = require('bpmn-js-properties-panel/lib/helper/CmdHelper');
 
+import '@fortawesome/fontawesome-free/js/all.js'
+
 let assetOptions, capOptions;
 let capabilities;
 let basys_compatibility = null;
@@ -200,13 +202,13 @@ let getComponentProps = (group, element, translate) => {
     }));
 
     group.entries.push({
-      html: "<button id='feasibility-button' data-action='checkFeasibility'>Check feasibility</button>",
+      html: "<button id='feasibility-button' data-action='checkFeasibility'>Check feasibility</button><i class='fa fa-check'></i>",
       id: "form-fields-feasibility-button",
       checkFeasibility: function(element, node) {
-        node.childNodes[0].style.backgroundColor = "#bada55"
+        node.childNodes[1].style.display = "inline-block"
 
         setTimeout(function(){  
-          node.childNodes[0].style.backgroundColor = "#efefef" 
+          node.childNodes[1].style.display = "none" 
         }, 2000);
       }
     });

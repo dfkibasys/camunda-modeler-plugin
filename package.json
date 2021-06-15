@@ -27,6 +27,7 @@
     "webpack-cli": "^3.3.7"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.3",
     "axios": "^0.21.1",
     "camunda-bpmn-moddle": "^5.1.2",
     "lodash": "^3.0.0"
