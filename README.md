@@ -1,6 +1,6 @@
 # Camunda Modeler BaSys Plugin
 
-[![Compatible with Camunda Modeler version 3.7](https://img.shields.io/badge/Camunda%20Modeler-3.7+-blue.svg)](https://github.com/camunda/camunda-modeler)
+[![Compatible with Camunda Modeler version 4.7](https://img.shields.io/badge/Camunda%20Modeler-4.7+-blue.svg)](https://github.com/camunda/camunda-modeler)
 
 This is a BaSys plugin for the Camunda Modeler.
 
