@@ -13,7 +13,7 @@ let basys_compatibility = null;
 
 const LOW_PRIORITY = 500;
 
-let aas_server_url = "http://localhost:4000/api/v1/registry"
+let aas_server_url = "http://aasregistry.basys-lnv-1.mrk40.dfki.lan:80/registry/shell-descriptors"
 
 function AccessAASProvider(propertiesPanel, translate) {
   assetOptions = [];
@@ -101,13 +101,13 @@ let getAssets = () => {
     axios.get(aas_server_url)
     .then(res => {
       for (let i = 0; i < res.data.length; i++) {
-        let idShort = res.data[i].asset.idShort;
+        let idShort = res.data[i].idShort;
         assets[idShort] = { idShort };
 
         //submodel loop
-        for (let j = 0; j < res.data[i].submodels.length; j++) {
-            if (res.data[i].submodels[j].idShort === "Capabilities"){
-              let capabilityAddress = res.data[i].submodels[j].endpoints[0].address;
+        for (let j = 0; j < res.data[i].submodelDescriptors.length; j++) {
+            if (res.data[i].submodelDescriptors[j].idShort === "Capabilities"){
+              let capabilityAddress = res.data[i].submodelDescriptors[j].endpoints[0].protocolInformation.endpointAddress;
               assets[idShort]['capabilityAddress'] = capabilityAddress;
             }
         }
